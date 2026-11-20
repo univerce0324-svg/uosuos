@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f6fb" />
+  <title>나의 커리어 성향 찾기</title>
+  <style>
+    :root {
+      --ink: #20243a;
+      --muted: #747b91;
+      --line: #e5e8f1;
+      --surface: #ffffff;
+      --bg: #f5f6fb;
+      --accent: #6558d9;
+      --accent-2: #8d82f2;
+      --soft: #f0eeff;
+      --green: #2e8d78;
+      --shadow: 0 18px 55px rgba(35, 39, 76, .09);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 16px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(141,130,242,.14), transparent 27rem),
+        radial-gradient(circle at 92% 85%, rgba(94,180,164,.10), transparent 25rem),
+        var(--bg);
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    }
+    button { font: inherit; }
+    .app { width: min(100%, 760px); margin: 0 auto; }
+    .topline { display:flex; justify-content:space-between; align-items:center; margin: 0 4px 16px; color:var(--muted); font-size:12px; letter-spacing:.11em; font-weight:800; }
+    .topline .brand { color:var(--accent); }
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(229,232,241,.9);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .screen { display:none; padding: clamp(25px, 6vw, 52px); }
+    .screen.active { display:block; animation: appear .32s ease both; }
+    @keyframes appear { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:var(--soft); color:var(--accent); border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.04em; }
+    .eyebrow .dot { width:7px; height:7px; background:var(--accent); border-radius:50%; }
+    h1 { margin:22px 0 14px; font-size:clamp(34px, 7vw, 54px); line-height:1.13; letter-spacing:-.055em; }
+    h1 .gradient { color:var(--accent); }
+    .lead { max-width:560px; margin:0; color:var(--muted); line-height:1.8; font-size:15px; }
+    .intro-visual { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:32px 0 28px; }
+    .mini-type { min-height:100px; padding:15px 10px; background:#fafaff; border:1px solid var(--line); border-radius:17px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+    .mini-type .symbol { display:grid; place-items:center; width:34px; height:34px; border-radius:12px; background:var(--soft); color:var(--accent); font-size:17px; font-weight:900; }
+    .mini-type b { font-size:12px; }
+    .mini-type small { color:var(--muted); font-size:10px; }
+    .meta-row { display:flex; gap:16px; flex-wrap:wrap; margin:0 0 26px; color:var(--muted); font-size:12px; }
+    .meta-row span { display:flex; align-items:center; gap:6px; }
+    .primary, .secondary { border:0; border-radius:14px; padding:15px 22px; cursor:pointer; font-weight:800; transition:.18s ease; }
+    .primary { width:100%; color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:0 9px 20px rgba(101,88,217,.22); }
+    .primary:hover { transform:translateY(-2px); box-shadow:0 13px 24px rgba(101,88,217,.27); }
+    .secondary { color:var(--ink); background:#f2f3f8; }
+    .secondary:hover { background:#e9eaf3; }
+    .progress-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+    .progress-label { color:var(--muted); font-size:12px; font-weight:800; letter-spacing:.04em; }
+    .progress-count { color:var(--accent); font-size:13px; font-weight:900; font-variant-numeric:tabular-nums; }
+    .progress-track { width:100%; height:7px; border-radius:99px; overflow:hidden; background:#eeeff6; margin-bottom:32px; }
+    .progress-fill { height:100%; width:10%; border-radius:99px; background:linear-gradient(90deg,var(--accent),#a59df8); transition:width .25s ease; }
+    .q-category { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; margin-bottom:12px; }
+    .question { margin:0 0 10px; font-size:clamp(23px,4vw,30px); line-height:1.4; letter-spacing:-.04em; }
+    .question-hint { margin:0 0 24px; color:var(--muted); font-size:13px; line-height:1.6; }
+    .options { display:grid; gap:12px; }
+    .option {
+      display:flex; align-items:flex-start; gap:14px; width:100%; text-align:left;
+      padding:17px 18px; background:#fff; border:1.5px solid var(--line); border-radius:17px;
+      cursor:pointer; color:var(--ink); transition:.16s ease;
+    }
+    .option:hover { border-color:#b9b2fa; background:#fcfbff; transform:translateY(-1px); }
+    .option.selected { border-color:var(--accent); background:#f7f5ff; box-shadow:0 0 0 3px rgba(101,88,217,.08); }
+    .option .letter { flex:0 0 28px; width:28px; height:28px; display:grid; place-items:center; border-radius:9px; background:#f0f1f7; color:#73788e; font-size:12px; font-weight:900; }
+    .option.selected .letter { color:#fff; background:var(--accent); }
+    .option strong { display:block; margin:1px 0 5px; font-size:14px; line-height:1.45; }
+    .option small { display:block; color:var(--muted); font-size:12px; line-height:1.55; }
+    .quiz-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:25px; }
+    .quiz-actions .secondary { min-width:100px; }
+    .quiz-actions .primary { width:auto; min-width:140px; padding:14px 22px; }
+    .quiz-actions .primary:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+    .result-top { text-align:center; padding-bottom:26px; border-bottom:1px solid var(--line); }
+    .result-symbol { display:grid; place-items:center; width:74px; height:74px; margin:20px auto 15px; border-radius:24px; background:var(--soft); color:var(--accent); font-size:30px; font-weight:900; }
+    .result-kicker { color:var(--accent); font-size:12px; font-weight:900; letter-spacing:.12em; }
+    .result-title { margin:9px 0 8px; font-size:clamp(30px,6vw,42px); letter-spacing:-.05em; }
+    .result-subtitle { color:var(--muted); font-size:14px; line-height:1.7; margin:0 auto; max-width:510px; }
+    .score-area { padding:23px 0 26px; border-bottom:1px solid var(--line); }
+    .section-title { margin:0 0 17px; font-size:15px; letter-spacing:-.02em; }
+    .score-line { display:grid; grid-template-columns:115px 1fr 40px; gap:12px; align-items:center; margin:13px 0; }
+    .score-name { color:#555c73; font-size:12px; font-weight:800; }
+    .score-bar { height:9px; background:#eeeff6; overflow:hidden; border-radius:99px; }
+    .score-bar span { display:block; height:100%; background:linear-gradient(90deg,var(--accent),#a59df8); border-radius:99px; }
+    .score-num { text-align:right; color:var(--accent); font-size:12px; font-weight:900; font-variant-numeric:tabular-nums; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:24px 0; }
+    .info-card { background:#fafaff; border:1px solid var(--line); border-radius:17px; padding:17px; }
+    .info-card h3 { margin:0 0 9px; font-size:13px; }
+    .info-card p { margin:0; color:#626980; font-size:12px; line-height:1.75; }
+    .full-card { grid-column:1/-1; }
+    .tag-list { display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
+    .tag { padding:7px 10px; border-radius:99px; background:#f0eeff; color:#5e54bd; font-size:11px; font-weight:800; }
+    .next-step { padding:18px; margin:0 0 22px; border-radius:17px; background:#f1f8f6; border:1px solid #dcefe9; }
+    .next-step b { display:block; margin-bottom:7px; color:#287763; font-size:13px; }
+    .next-step p { margin:0; color:#55746c; font-size:12px; line-height:1.7; }
+    .result-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .notice { margin:19px 2px 0; color:#8a8fa1; font-size:10px; line-height:1.65; text-align:center; }
+    .hidden { display:none !important; }
+    @media (max-width:560px) {
+      body { padding:16px 10px; }
+      .panel { border-radius:22px; }
+      .screen { padding:25px 20px; }
+      .intro-visual { grid-template-columns:repeat(2,1fr); }
+      .mini-type { min-height:82px; }
+      .result-grid { grid-template-columns:1fr; }
+      .full-card { grid-column:auto; }
+      .score-line { grid-template-columns:94px 1fr 34px; gap:8px; }
+      .result-actions { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="topline"><span class="brand">CAREER COMPASS</span><span>CAREER STYLE TEST</span></div>
+    <div class="panel">
+      <section class="screen active" id="intro">
+        <span class="eyebrow"><span class="dot"></span> 나를 이해하는 10개의 질문</span>
+        <h1>나의 일하는 방식,<br><span class="gradient">어떤 유형일까?</span></h1>
+        <p class="lead">정답을 고르는 테스트가 아닙니다. 평소 내가 일을 시작하고, 문제를 해결하고, 사람들과 협업하는 방식을 살펴보는 커리어 성향 진단입니다.</p>
+        <div class="intro-visual">
+          <div class="mini-type"><span class="symbol">⌕</span><b>분석 설계형</b><small>체계 × 독립</small></div>
+          <div class="mini-type"><span class="symbol">◎</span><b>전략 조율형</b><small>체계 × 협업</small></div>
+          <div class="mini-type"><span class="symbol">✳</span><b>창의 탐색형</b><small>탐색 × 독립</small></div>
+          <div class="mini-type"><span class="symbol">↗</span><b>실행 연결형</b><small>탐색 × 협업</small></div>
+        </div>
+        <div class="meta-row"><span>◷ 약 3분</span><span>▤ 총 10문항</span><span>◇ 결과 유형 4가지</span></div>
+        <button class="primary" id="startBtn">진단 시작하기 <span aria-hidden="true">→</span></button>
+      </section>
+
+      <section class="screen" id="quiz">
+        <div class="progress-head"><span class="progress-label" id="progressLabel">WORK APPROACH · 업무 접근 방식</span><span class="progress-count" id="progressCount">01 / 10</span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="q-category" id="qCategory">업무 접근 방식</div>
+        <h2 class="question" id="questionText"></h2>
+        <p class="question-hint" id="questionHint">평소의 나와 더 가까운 쪽을 선택해 주세요.</p>
+        <div class="options" id="options"></div>
+        <div class="quiz-actions">
+          <button class="secondary" id="prevBtn">← 이전</button>
+          <button class="primary" id="nextBtn" disabled>다음 질문 →</button>
+        </div>
+      </section>
+
+      <section class="screen" id="result">
+        <div class="result-top">
+          <div class="result-kicker">YOUR CAREER STYLE</div>
+          <div class="result-symbol" id="resultSymbol">⌕</div>
+          <h2 class="result-title" id="resultTitle">분석 설계형</h2>
+          <p class="result-subtitle" id="resultSubtitle"></p>
+        </div>
+        <div class="score-area">
+          <h3 class="section-title">나의 성향 밸런스</h3>
+          <div class="score-line"><span class="score-name" id="axis1Name">체계적으로 접근</span><div class="score-bar"><span id="axis1Bar"></span></div><span class="score-num" id="axis1Score"></span></div>
+          <div class="score-line"><span class="score-name" id="axis2Name">독립적으로 집중</span><div class="score-bar"><span id="axis2Bar"></span></div><span class="score-num" id="axis2Score"></span></div>
+        </div>
+        <div class="result-grid">
+          <article class="info-card"><h3>강점</h3><p id="strengthText"></p></article>
+          <article class="info-card"><h3>유의할 점</h3><p id="cautionText"></p></article>
+          <article class="info-card"><h3>잘 맞는 업무 환경</h3><p id="environmentText"></p></article>
+          <article class="info-card"><h3>탐색해 볼 직무</h3><p id="jobText"></p></article>
+          <article class="info-card full-card"><h3>나를 더 잘 활용하는 방법</h3><p id="tipText"></p></article>
+        </div>
+        <div class="next-step"><b>다음 단계 제안</b><p id="nextStepText"></p></div>
+        <div class="result-actions">
+          <button class="primary" id="retryBtn">다시 진단하기</button>
+          <button class="secondary" id="copyBtn">결과 요약 복사하기</button>
+        </div>
+        <p class="notice">이 테스트는 자기이해와 진로 탐색을 돕기 위한 참고용 콘텐츠입니다. 심리검사나 검증된 직업 적성검사를 대체하지 않으며, 실제 직무 적합성은 역량·경험·가치관·환경에 따라 달라질 수 있습니다.</p>
+      </section>
+    </div>
+    <p class="notice" id="footerNote">결과는 현재 응답을 바탕으로 한 경향이며, 특정 직업이나 진로를 제한하지 않습니다.</p>
+  </main>
+
+  <script>
+    const questions = [
+      { group: '업무 접근 방식', label: 'WORK APPROACH · 업무 접근 방식', title: '처음 맡는 과제라면, 나는 어떻게 시작하는 편인가요?', options: [
+        ['A', '목표와 순서를 먼저 정리한다', '해야 할 일을 나누고 계획을 세운 뒤 시작한다.', 'structure'],
+        ['B', '작게 시도하면서 방향을 잡는다', '일단 실행해 보고 경험을 바탕으로 계획을 조정한다.', 'explore']
+      ]},
+      { group: '업무 접근 방식', label: 'WORK APPROACH · 업무 접근 방식', title: '예상하지 못한 문제가 생겼을 때 더 가까운 대응은?', options: [
+        ['A', '자료를 모아 원인을 차근차근 좁힌다', '사실과 근거를 확인하면서 문제의 핵심을 찾는다.', 'structure'],
+        ['B', '가능한 해결책을 다양하게 떠올린다', '여러 대안을 빠르게 펼쳐 보고 가능성을 시험한다.', 'explore']
+      ]},
+      { group: '업무 접근 방식', label: 'WORK APPROACH · 업무 접근 방식', title: '새로운 분야를 배울 때 더 편한 방식은?', options: [
+        ['A', '기본 개념과 원리를 익힌 뒤 응용한다', '전체 구조를 이해하고 단계적으로 연습한다.', 'structure'],
+        ['B', '사례를 직접 따라 하며 익힌다', '먼저 해 보고 필요한 개념을 찾아가며 배운다.', 'explore']
+      ]},
+      { group: '업무 접근 방식', label: 'WORK APPROACH · 업무 접근 방식', title: '아이디어를 평가할 때 더 중요하게 보는 것은?', options: [
+        ['A', '근거와 실현 가능성', '데이터, 일정, 자원 등을 확인해 구체화한다.', 'structure'],
+        ['B', '새로움과 확장 가능성', '기존 방식과 다른 관점이나 새로운 기회를 살펴본다.', 'explore']
+      ]},
+      { group: '업무 접근 방식', label: 'WORK APPROACH · 업무 접근 방식', title: '여러 과제를 동시에 진행해야 한다면?', options: [
+        ['A', '우선순위와 마감 기준을 정한다', '중요도에 따라 순서를 세우고 계획적으로 처리한다.', 'structure'],
+        ['B', '상황 변화에 맞춰 순서를 조정한다', '새로운 요청이나 변화에 따라 유연하게 움직인다.', 'explore']
+      ]},
+      { group: '협업 방식', label: 'COLLABORATION · 협업 방식', title: '팀 프로젝트에서 가장 몰입되는 순간은?', options: [
+        ['A', '내가 맡은 영역을 깊이 파고들 때', '한 주제를 혼자 집중해서 조사하고 완성할 때 힘이 난다.', 'independent'],
+        ['B', '팀원들과 의견을 주고받을 때', '서로 다른 관점을 연결해 결과물을 만들어 갈 때 힘이 난다.', 'collaborative']
+      ]},
+      { group: '협업 방식', label: 'COLLABORATION · 협업 방식', title: '내가 선호하는 업무 환경은?', options: [
+        ['A', '방해받지 않고 집중할 수 있는 환경', '혼자 생각을 정리하고 몰입할 수 있는 시간이 중요하다.', 'independent'],
+        ['B', '질문과 의견 교환이 활발한 환경', '주변 사람들과 자연스럽게 소통하며 일하는 것이 좋다.', 'collaborative']
+      ]},
+      { group: '협업 방식', label: 'COLLABORATION · 협업 방식', title: '피드백을 받을 때 더 선호하는 방식은?', options: [
+        ['A', '내용을 정리해 검토할 수 있는 피드백', '문서나 메시지로 받은 뒤 충분히 생각하고 반영한다.', 'independent'],
+        ['B', '대화로 바로 주고받는 피드백', '질문하고 의견을 나누며 함께 개선 방향을 찾는다.', 'collaborative']
+      ]},
+      { group: '협업 방식', label: 'COLLABORATION · 협업 방식', title: '의견 차이가 생겼을 때 나는 보통?', options: [
+        ['A', '먼저 생각을 정리한 뒤 의견을 나눈다', '내 입장과 근거를 정돈한 다음 논의에 참여한다.', 'independent'],
+        ['B', '대화를 시작해 함께 답을 찾는다', '상대의 생각을 들으며 논의 과정에서 해결책을 만든다.', 'collaborative']
+      ]},
+      { group: '협업 방식', label: 'COLLABORATION · 협업 방식', title: '일을 마쳤을 때 더 큰 성취감을 느끼는 순간은?', options: [
+        ['A', '혼자 집중해 어려운 과제를 완성했을 때', '내 전문성과 책임으로 결과를 만들어 냈다는 느낌이 든다.', 'independent'],
+        ['B', '팀과 역할을 맞춰 공동 목표를 달성했을 때', '서로 기여한 부분이 연결되어 성과가 났다는 느낌이 든다.', 'collaborative']
+      ]}
+    ];
+
+    const resultTypes = {
+      'structure-independent': {
+        name: '분석 설계형', symbol: '⌕', subtitle: '충분히 이해하고, 논리적으로 설계한 뒤 움직이는 유형입니다. 복잡한 문제를 구조화하고 완성도를 높이는 데 강점을 보일 수 있습니다.',
+        strength: '정보를 체계적으로 정리하고 문제의 원인을 분석하는 편입니다. 계획 수립, 세부 사항 점검, 깊이 있는 탐구가 필요한 업무에서 역량을 발휘하기 좋습니다.',
+        caution: '준비와 검토에 시간을 많이 쓰거나, 불확실한 상황에서 시작을 미룰 수 있습니다. 완벽한 계획보다 작은 실행으로 확인하는 습관이 도움이 됩니다.',
+        environment: '개인의 전문성을 존중하고 집중 시간을 보장하는 환경, 역할과 목표가 비교적 명확한 업무 환경이 잘 맞을 수 있습니다.',
+        jobs: ['데이터 분석', '재무·회계', '리서치', '품질관리', '전략기획'],
+        tip: '일을 시작하기 전에 분석에 사용할 시간을 정해 보세요. 분석 결과를 작은 실험이나 초안으로 빠르게 검증하면 강점이 더 잘 살아납니다.',
+        next: '관심 분야의 데이터를 직접 분석하거나, 특정 주제를 조사해 1~2쪽짜리 인사이트 보고서로 정리해 보세요.'
+      },
+      'structure-collaborative': {
+        name: '전략 조율형', symbol: '◎', subtitle: '목표와 기준을 세우고, 사람들과 역할을 맞추며 결과를 만들어 가는 유형입니다. 복잡한 일을 정리하고 여러 이해관계자를 연결하는 데 강점을 보일 수 있습니다.',
+        strength: '전체 흐름을 파악하고 우선순위를 세우는 데 강점이 있습니다. 정보를 명확하게 전달하고 일정·역할·기준을 조율하는 업무에서 역량을 발휘하기 좋습니다.',
+        caution: '모두가 납득할 때까지 조율하다 보면 의사결정이 늦어질 수 있습니다. 모든 의견을 반영하기보다 핵심 목표와 결정 시점을 먼저 합의해 보세요.',
+        environment: '공동 목표가 분명하고 협업 체계가 갖춰진 환경, 여러 부서나 구성원과 소통하며 프로젝트를 운영하는 업무가 잘 맞을 수 있습니다.',
+        jobs: ['프로젝트 관리', '경영기획', '컨설팅', '사업 운영', '인사기획'],
+        tip: '논의가 시작될 때 목표·담당자·마감일을 간단히 정리해 공유해 보세요. 조율 능력을 실행 가능한 계획으로 연결할 수 있습니다.',
+        next: '팀 프로젝트에서 일정표나 역할 분담표를 직접 만들어 보고, 진행 과정에서 조정한 내용을 기록해 보세요.'
+      },
+      'explore-independent': {
+        name: '창의 탐색형', symbol: '✳', subtitle: '새로운 관점과 가능성을 탐색하고, 자신만의 방식으로 깊이 발전시키는 유형입니다. 아이디어를 발굴하고 새로운 접근을 시도하는 데 강점을 보일 수 있습니다.',
+        strength: '익숙한 방식에 질문을 던지고 여러 가능성을 상상하는 편입니다. 독립적인 탐구, 콘셉트 개발, 새로운 문제 정의가 필요한 업무에서 역량을 발휘하기 좋습니다.',
+        caution: '아이디어가 많아지면서 우선순위가 흐려지거나 마무리 단계가 늦어질 수 있습니다. 아이디어마다 작은 검증 기준과 완료 시점을 정하면 도움이 됩니다.',
+        environment: '자율성이 있고 새로운 시도를 허용하는 환경, 개인의 관점과 전문성을 결과물에 반영할 수 있는 업무가 잘 맞을 수 있습니다.',
+        jobs: ['콘텐츠 기획', 'UX 리서치', '브랜드 기획', '서비스 기획', '신사업 탐색'],
+        tip: '떠오른 아이디어를 모으는 데서 멈추지 말고, 가장 가능성 높은 하나를 골라 시제품이나 간단한 테스트로 구현해 보세요.',
+        next: '평소 불편하다고 느낀 문제 하나를 정하고, 기존 해결책과 다른 대안을 3가지 제안한 뒤 가장 현실적인 안을 시험해 보세요.'
+      },
+      'explore-collaborative': {
+        name: '실행 연결형', symbol: '↗', subtitle: '사람들과 빠르게 소통하며 아이디어를 실제 행동으로 옮기는 유형입니다. 변화에 대응하고 다양한 사람을 연결해 결과를 만드는 데 강점을 보일 수 있습니다.',
+        strength: '새로운 상황에 빠르게 적응하고, 사람들의 반응을 살피며 실행 방향을 조정하는 편입니다. 현장 대응, 관계 형성, 아이디어 실행이 중요한 업무에서 역량을 발휘하기 좋습니다.',
+        caution: '속도와 관계 형성에 집중하다 보면 기록이나 세부 점검이 부족해질 수 있습니다. 실행 전후에 핵심 내용을 짧게 기록하는 습관이 도움이 됩니다.',
+        environment: '사람들과 자주 소통하고 결과를 빠르게 확인할 수 있는 환경, 실험과 개선이 반복되는 프로젝트 중심 업무가 잘 맞을 수 있습니다.',
+        jobs: ['마케팅 실행', '영업·파트너십', '사업개발', '이벤트 기획', '고객 성공'],
+        tip: '아이디어를 제안할 때 담당자·기한·성공 기준까지 함께 정해 보세요. 추진력을 지속 가능한 성과로 연결하는 데 도움이 됩니다.',
+        next: '소규모 캠페인이나 행사를 기획해 직접 실행하고, 참여자 반응을 수집해 다음 실행에 반영해 보세요.'
+      }
+    };
+
+    let current = 0;
+    const answers = Array(questions.length).fill(null);
+    const $ = (id) => document.getElementById(id);
+    const screens = ['intro', 'quiz', 'result'];
+    function showScreen(id) {
+      screens.forEach(name => $(name).classList.toggle('active', name === id));
+      $('footerNote').classList.toggle('hidden', id === 'result');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function renderQuestion() {
+      const q = questions[current];
+      $('progressLabel').textContent = q.label;
+      $('progressCount').textContent = `${String(current + 1).padStart(2, '0')} / 10`;
+      $('progressFill').style.width = `${(current + 1) * 10}%`;
+      $('qCategory').textContent = q.group;
+      $('questionText').textContent = q.title;
+      $('options').innerHTML = '';
+      q.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `option ${answers[current] === option[3] ? 'selected' : ''}`;
+        button.setAttribute('aria-pressed', answers[current] === option[3] ? 'true' : 'false');
+        button.innerHTML = `<span class="letter">${option[0]}</span><span><strong>${option[1]}</strong><small>${option[2]}</small></span>`;
+        button.addEventListener('click', () => {
+          answers[current] = option[3];
+          renderQuestion();
+        });
+        $('options').appendChild(button);
+      });
+      $('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+      $('nextBtn').disabled = answers[current] === null;
+      $('nextBtn').textContent = current === questions.length - 1 ? '결과 확인하기 →' : '다음 질문 →';
+    }
+    function calculateResult() {
+      const structure = answers.slice(0, 5).filter(x => x === 'structure').length;
+      const explore = 5 - structure;
+      const independent = answers.slice(5).filter(x => x === 'independent').length;
+      const collaborative = 5 - independent;
+      const key = `${structure >= 3 ? 'structure' : 'explore'}-${independent >= 3 ? 'independent' : 'collaborative'}`;
+      const data = resultTypes[key];
+      $('resultSymbol').textContent = data.symbol;
+      $('resultTitle').textContent = data.name;
+      $('resultSubtitle').textContent = data.subtitle;
+      $('strengthText').textContent = data.strength;
+      $('cautionText').textContent = data.caution;
+      $('environmentText').textContent = data.environment;
+      $('jobText').innerHTML = '';
+      const tags = document.createElement('div');
+      tags.className = 'tag-list';
+      data.jobs.forEach(job => {
+        const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = job; tags.appendChild(tag);
+      });
+      $('jobText').appendChild(tags);
+      $('tipText').textContent = data.tip;
+      $('nextStepText').textContent = data.next;
+      $('axis1Name').textContent = structure >= explore ? '체계적으로 접근' : '탐색적으로 접근';
+      $('axis1Bar').style.width = `${Math.max(structure, explore) * 20}%`;
+      $('axis1Score').textContent = `${Math.max(structure, explore)}/5`;
+      $('axis2Name').textContent = independent >= collaborative ? '독립적으로 집중' : '협업하며 소통';
+      $('axis2Bar').style.width = `${Math.max(independent, collaborative) * 20}%`;
+      $('axis2Score').textContent = `${Math.max(independent, collaborative)}/5`;
+      const summary = `나의 커리어 성향: ${data.name}\n${data.subtitle}\n업무 접근: 체계 ${structure}/5 · 탐색 ${explore}/5\n협업 방식: 독립 ${independent}/5 · 협업 ${collaborative}/5\n강점: ${data.strength}\n탐색 직무: ${data.jobs.join(', ')}`;
+      $('copyBtn').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(summary);
+          $('copyBtn').textContent = '복사 완료';
+          setTimeout(() => $('copyBtn').textContent = '결과 요약 복사하기', 1800);
+        } catch (e) {
+          const area = document.createElement('textarea'); area.value = summary; document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+          $('copyBtn').textContent = '복사 완료';
+          setTimeout(() => $('copyBtn').textContent = '결과 요약 복사하기', 1800);
+        }
+      };
+      showScreen('result');
+    }
+    $('startBtn').addEventListener('click', () => { current = 0; showScreen('quiz'); renderQuestion(); });
+    $('prevBtn').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+    $('nextBtn').addEventListener('click', () => {
+      if (answers[current] === null) return;
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+      else calculateResult();
+    });
+    $('retryBtn').addEventListener('click', () => { current = 0; answers.fill(null); showScreen('intro'); });
+  </script>
+</body>
+</html>
